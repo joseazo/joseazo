@@ -4,50 +4,99 @@
  */
 package com.mycompany.proyectofinal;
 
+
 /**
  *
  * @author azoac
  */
+
+
 import javax.swing.JOptionPane;
 import java.util.Random;
 
 public class BancoGestor {
-
-    private Cliente cliente1;
-    private Cliente cliente2;
-    private int contadorClientes = 0;
+    private Cliente[] clientes = new Cliente[30]; // Tamaño del arreglo hardcodeado
+    private int contadorClientes;
     private int siguienteUsuarioNumero = 40;
     private int siguienteNumeroCuenta = 4710;
 
+    public BancoGestor() {
+        this.contadorClientes = 0;
+    }
+
+    // Método para agregar clientes predefinidos (solo para pruebas iniciales)
+    public void setCliente(int index, Cliente cliente) {
+        if (index >= 0 && index < 30) { // Usando el literal 30
+            this.clientes[index] = cliente;
+            if (index >= contadorClientes) {
+                contadorClientes = index + 1; // Ajusta el contador si se agrega en un índice mayor
+            }
+        }
+    }
+    public Cliente getCliente(int index) {
+        if (index >= 0 && index < contadorClientes) {
+            return clientes[index];
+        }
+        return null;
+    }
+
+    public int getContadorClientes() {
+        return contadorClientes;
+    }
+    
+    public int getSiguienteNumeroCuenta() {
+        return siguienteNumeroCuenta;
+    }
+
+    public Cliente buscarClientePorId(String idCliente) {
+        for (int i = 0; i < contadorClientes; i++) {
+            if (clientes[i] != null && clientes[i].getIdCliente().equals(idCliente)) {
+                return clientes[i];
+            }
+        }
+        return null;
+    }
+
+    public Cliente buscarClientePorUsuario(String usuario) {
+        for (int i = 0; i < contadorClientes; i++) {
+            if (clientes[i] != null && clientes[i].getUsuario().equals(usuario)) {
+                return clientes[i];
+            }
+        }
+        return null;
+    }
+
+    private boolean existeIdCliente(String idCliente) {
+        return buscarClientePorId(idCliente) != null;
+    }
+
+    private String obtenerPrimerNombre(String nombreCompleto) {
+        if (nombreCompleto != null && nombreCompleto.contains(" ")) {
+            return nombreCompleto.substring(0, nombreCompleto.indexOf(" "));
+        }
+        return nombreCompleto; // Si no hay espacio, se asume que todo es el primer nombre
+    }
+
     public void agregarCliente() {
-        if (contadorClientes >= 2) {
-            JOptionPane.showMessageDialog(null, "Límite máximo de clientes alcanzado (2). No se pueden agregar más.");
+        if (contadorClientes >= 30) { // Usando el literal 30
+            JOptionPane.showMessageDialog(null, "Límite máximo de clientes alcanzado. No se pueden agregar más."); 
             return;
         }
 
-        String idCliente = "";
+        String idCliente;
         boolean idValido = false;
-        int confirmResult;
         do {
             idCliente = JOptionPane.showInputDialog(null, "Ingrese el ID del cliente:");
-            if (idCliente == null) {
+            if (idCliente == null) { // Si el usuario presiona Cancelar o cierra el diálogo
                 JOptionPane.showMessageDialog(null, "Operación de agregar cliente cancelada.");
                 return;
             }
             if (idCliente.trim().length() == 0) {
-                confirmResult = JOptionPane.showConfirmDialog(null, "El ID del cliente no puede estar vacío. ¿Desea ingresar otro ID?");
-                if (confirmResult != 0) {
-                    JOptionPane.showMessageDialog(null, "Operación de agregar cliente cancelada.");
-                    return;
-                }
-                idValido = false;
+                int confirmResult = JOptionPane.showConfirmDialog(null, "¿Desea ingresar otro ID?");
+                if (confirmResult != 0) { return; } 
             } else if (existeIdCliente(idCliente)) {
-                confirmResult = JOptionPane.showConfirmDialog(null, "Cliente ya agregado en el sistema con el ID: " + idCliente + ".\n¿Desea ingresar otro ID?");
-                if (confirmResult != 0) {
-                    JOptionPane.showMessageDialog(null, "Operación de agregar cliente cancelada.");
-                    return;
-                }
-                idValido = false;
+                int confirmResult = JOptionPane.showConfirmDialog(null, "Cliente ya agregado en el sistema con el ID: " + idCliente + ".\n¿Desea ingresar otro ID?");
+                if (confirmResult != 0) { return; } 
             } else {
                 idValido = true;
             }
@@ -59,84 +108,102 @@ public class BancoGestor {
             return;
         }
 
-        String telefono = "";
+        String telefono;
         boolean telefonoValido = false;
         do {
             telefono = JOptionPane.showInputDialog(null, "Ingrese el teléfono (Formato: 0000-0000):");
-            if (telefono == null) {
-                JOptionPane.showMessageDialog(null, "Operación de agregar cliente cancelada.");
-                return;
-            }
+            if (telefono == null) { JOptionPane.showMessageDialog(null, "Operación de agregar cliente cancelada.");
+            } 
+            
+            // Validación de teléfono 
             if (telefono.length() == 9 && telefono.charAt(4) == '-') {
-                telefonoValido = true;
-            } else {
-                confirmResult = JOptionPane.showConfirmDialog(null, "Formato de teléfono inválido. Use 0000-0000.\n¿Desea ingresar un teléfono válido?");
-                if (confirmResult != 0) {
-                    JOptionPane.showMessageDialog(null, "Operación de agregar cliente cancelada.");
-                    return;
+                boolean allDigits = true;
+                for (int i = 0; i < telefono.length(); i++) {
+                    char c = telefono.charAt(i);
+                    if (i != 4 && (c < '0' || c > '9')) { // Ignorar el guion y verificar que sean dígitos
+                        allDigits = false;
+                        break;
+                    }
                 }
-                telefonoValido = false;
+                if (allDigits) {
+                    telefonoValido = true;
+                }
+            }
+            
+            if (!telefonoValido) {
+                int confirmResult = JOptionPane.showConfirmDialog(null, "Formato de teléfono inválido. Use 0000-0000.\n¿Desea ingresar un teléfono válido?");
+                if (confirmResult != 0) { return; 
+                } 
             }
         } while (!telefonoValido);
 
-        String correo = "";
+        String correo;
         boolean correoValido = false;
         do {
             correo = JOptionPane.showInputDialog(null, "Ingrese el correo electrónico:");
-            if (correo == null) {
-                JOptionPane.showMessageDialog(null, "Operación de agregar cliente cancelada.");
-                return;
-            }
+            if (correo == null) { JOptionPane.showMessageDialog(null, "Operación de agregar cliente cancelada.", "Cancelado", 1); return; } // INFORMATION_MESSAGE
+            
             int atIndex = correo.indexOf('@');
-            if (atIndex > 0 && atIndex < correo.length() - 1) {
-                int dotIndex = correo.indexOf('.', atIndex + 1);
-                if (dotIndex > atIndex + 1 && dotIndex < correo.length() - 1) {
+            if (atIndex > 0 && atIndex < correo.length() - 1) { // '@' no al principio ni al final
+                int dotIndex = correo.indexOf('.', atIndex + 1); // Buscar '.' después de '@'
+                if (dotIndex > atIndex + 1 && dotIndex < correo.length() - 1) { // '.' después de '@' y no al final
                     correoValido = true;
                 }
             }
+            
             if (!correoValido) {
-                confirmResult = JOptionPane.showConfirmDialog(null, "Correo inválido. Debe contener '@' y un punto después del '@'.\n¿Desea ingresar otro correo?");
-                if (confirmResult != 0) {
-                    JOptionPane.showMessageDialog(null, "Operación de agregar cliente cancelada.");
-                    return;
-                }
+                int confirmResult = JOptionPane.showConfirmDialog(null, "Correo inválido. Debe contener '@' y un punto después del '@'.\n¿Desea ingresar otro correo?");
+                if (confirmResult != 0) { return; 
+                } 
+                
             }
         } while (!correoValido);
 
         String primerNombre = obtenerPrimerNombre(nombreCompleto);
-        String usuario = primerNombre + siguienteUsuarioNumero;
+        
+        String usuarioSinEspacios = "";
+        String lowerCasePrimerNombre = primerNombre.toLowerCase();
+        for (int i = 0; i < lowerCasePrimerNombre.length(); i++) {
+            char c = lowerCasePrimerNombre.charAt(i);
+            if (c != ' ') { // Si no es un espacio, añadirlo
+                usuarioSinEspacios = usuarioSinEspacios + c;
+            }
+        }
+        String usuario = usuarioSinEspacios + siguienteUsuarioNumero;
         siguienteUsuarioNumero++;
 
         Cliente nuevoCliente = new Cliente(idCliente, nombreCompleto, telefono, correo, usuario);
-
-        if (cliente1 == null) {
-            cliente1 = nuevoCliente;
-        } else if (cliente2 == null) {
-            cliente2 = nuevoCliente;
-        }
+        this.clientes[contadorClientes] = nuevoCliente;
         contadorClientes++;
 
-        String mensajeExito = "Cliente fue agregado exitosamente.\n\n"
-                + "ID Cliente: " + nuevoCliente.getIdCliente() + "\n"
-                + "Nombre Completo: " + nuevoCliente.getNombreCompleto() + "\n"
-                + "Usuario: " + nuevoCliente.getUsuario() + "\n"
-                + "Tarjeta de Acceso:\n";
+        String mensajeExito = "Cliente fue agregado exitosamente.\n\n" +
+                              "ID Cliente: " + nuevoCliente.getIdCliente() + "\n" +
+                              "Nombre Completo: " + nuevoCliente.getNombreCompleto() + "\n" +
+                              "Usuario: " + nuevoCliente.getUsuario() + "\n";
+        mensajeExito = mensajeExito + "Tarjeta de Acceso:\n";
         int[][] tarjeta = nuevoCliente.getTarjetaAcceso();
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 5; j++) {
-                mensajeExito += tarjeta[i][j] + " ";
+                if (tarjeta[i][j] < 10) {
+                    mensajeExito = mensajeExito + "0" + tarjeta[i][j] + " ";
+                } else {
+                    mensajeExito = mensajeExito + tarjeta[i][j] + " ";
+                }
             }
-            mensajeExito += "\n";
+            mensajeExito = mensajeExito + "\n";
         }
-
-        JOptionPane.showMessageDialog(null, mensajeExito);
+        JOptionPane.showMessageDialog(null, mensajeExito + "Cliente Agregado");
     }
 
     public void agregarNuevaCuenta() {
+        if (contadorClientes == 0) {
+            JOptionPane.showMessageDialog(null, "No hay clientes registrados en el sistema para agregar cuentas.");
+            return;
+        }
+
         Cliente clienteSeleccionado = null;
         String idCliente;
-        int confirmResult;
-        boolean canProceedCliente = false;
+        boolean clienteEncontrado = false;
 
         do {
             idCliente = JOptionPane.showInputDialog(null, "Ingrese el ID del cliente al que desea agregar una cuenta:");
@@ -144,374 +211,307 @@ public class BancoGestor {
                 JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
                 return;
             }
-
             clienteSeleccionado = buscarClientePorId(idCliente);
             if (clienteSeleccionado == null) {
-                confirmResult = JOptionPane.showConfirmDialog(null, "Cliente no encontrado. ¿Desea ingresar otro ID?");
-                if (confirmResult != 0) {
-                    JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
-                    return;
-                }
-                canProceedCliente = false;
-            } else if (clienteSeleccionado.getNumeroCuentasRegistradas() >= 2) {
-                confirmResult = JOptionPane.showConfirmDialog(null, "El cliente ya tiene el máximo de cuentas permitidas (2). ¿Desea ingresar otro ID?");
-                if (confirmResult != 0) {
-                    JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
-                    return;
-                }
-                canProceedCliente = false;
+                int confirmResult = JOptionPane.showConfirmDialog(null, "¿Desea ingresar otro ID?" + "Cliente no encontrado");
+                if (confirmResult != 0) { return; } 
             } else {
-                canProceedCliente = true;
+                clienteEncontrado = true;
             }
-        } while (!canProceedCliente);
+        } while (!clienteEncontrado);
 
-        TipoCuenta tipoCuenta = null;
-        boolean tipoCuentaSeleccionado = false;
-        do {
-            String[] opcionesTipoCuenta = {"Cuenta corriente", "Ahorros", "Inversión", "Planilla"};
-            int seleccionTipo = JOptionPane.showOptionDialog(
-                    null, "Seleccione el tipo de cuenta:", "Tipo de Cuenta",
-                    JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, opcionesTipoCuenta, opcionesTipoCuenta[0]);
-
-            if (seleccionTipo == -1) {
+        // Validar si el cliente ya tiene 5 cuentas
+        while (clienteSeleccionado.getNumeroCuentasRegistradas() >= 5) {// Usando el literal 5
+            int confirmResult = JOptionPane.showConfirmDialog(null, "El cliente ya tiene el número máximo de cuentas (5).\n¿Desea ingresar otro ID de cliente?");
+            if (confirmResult != 0) { 
                 JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
                 return;
             }
-
-            switch (seleccionTipo) {
-                case 0:
-                    tipoCuenta = TipoCuenta.CORRIENTE;
-                    tipoCuentaSeleccionado = true;
-                    break;
-                case 1:
-                    tipoCuenta = TipoCuenta.AHORROS;
-                    tipoCuentaSeleccionado = true;
-                    break;
-                case 2:
-                    tipoCuenta = TipoCuenta.INVERSION;
-                    tipoCuentaSeleccionado = true;
-                    break;
-                case 3:
-                    tipoCuenta = TipoCuenta.PLANILLA;
-                    tipoCuentaSeleccionado = true;
-                    break;
-                default:
-                    JOptionPane.showMessageDialog(null, "Selección de tipo de cuenta inválida. Por favor, intente de nuevo.");
-                    tipoCuentaSeleccionado = false;
-                    break;
+            
+            // Si elige "Ingresar otro ID", se vuelve a pedir el ID
+            idCliente = JOptionPane.showInputDialog(null, "Ingrese el ID del cliente al que desea agregar una cuenta:");
+            if (idCliente == null) {
+                JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
+                return;
             }
-        } while (!tipoCuentaSeleccionado);
+            clienteSeleccionado = buscarClientePorId(idCliente);
+            if (clienteSeleccionado == null) {
+                int confirmResult2 = JOptionPane.showConfirmDialog(null, "Cliente no encontrado. ¿Desea ingresar otro ID?");
+                if (confirmResult2 != 0) { return; } 
+            }
+        }
 
+        String numeroCuenta = "" + siguienteNumeroCuenta++; 
+        TipoCuenta tipoCuenta = null;
         double saldoInicial = 0;
-        boolean saldoValido = false;
-        do {
+        boolean datosCuentaValidos = false;
+
+        // Seleccionar tipo de cuenta
+        String[] tipos = {"CORRIENTE", "AHORROS", "INVERSION", "PLANILLA"};
+        int tipoSeleccion = JOptionPane.showOptionDialog(null, "Seleccione el tipo de cuenta:", "Tipo de Cuenta",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, tipos, tipos[0]);
+
+        if (tipoSeleccion == -1) { 
+            JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
+            return;
+        }
+
+        switch (tipoSeleccion) {
+            case 0:
+                tipoCuenta = TipoCuenta.CORRIENTE;
+                break;
+            case 1:
+                tipoCuenta = TipoCuenta.AHORROS;
+                break;
+            case 2:
+                tipoCuenta = TipoCuenta.INVERSION;
+                break;
+            case 3:
+                tipoCuenta = TipoCuenta.PLANILLA;
+                break;
+            default:
+                JOptionPane.showMessageDialog(null, "Selección de tipo de cuenta no válida. Asignando AHORROS por defecto.");
+                tipoCuenta = TipoCuenta.AHORROS; // Asignar un valor por defecto 
+                break;
+        }
+
+
+        // Solicitar y validar saldo inicial 
+        while (!datosCuentaValidos) {
             String saldoStr = JOptionPane.showInputDialog(null, "Ingrese el saldo inicial de la cuenta:");
             if (saldoStr == null) {
                 JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
                 return;
             }
-            try {
-                saldoInicial = Double.parseDouble(saldoStr);
-                if (saldoInicial < 0) {
-                    confirmResult = JOptionPane.showConfirmDialog(null, "El saldo debe ser mayor o igual a cero. ¿Desea ingresar otro Saldo?");
-                    if (confirmResult != 0) {
+            
+            boolean currentSaldoAttemptValid = false;
+            if (saldoStr.trim().length() == 0) {
+                 int confirmResult = JOptionPane.showConfirmDialog(null, "El saldo inicial no puede estar vacío. ¿Desea ingresar otro Saldo?", "Saldo Inválido", 0, 0); // YES_NO_OPTION, ERROR_MESSAGE
+                if (confirmResult != 0) { return; } 
+            } else {
+                boolean esNumero = true;
+                boolean puntoEncontrado = false;
+                for (int i = 0; i < saldoStr.length(); i++) {
+                    char c = saldoStr.charAt(i);
+                    if (c == '-' && i == 0) {
+                         
+                    
+                    if (c == '.' && !puntoEncontrado) { 
+                        puntoEncontrado = true;
+                         
+                    
+                    if (c < '0' || c > '9') { 
+                        esNumero = false;
+                        break;
+                    }
+                    }
+                    }
+                }
+
+                if (esNumero) {
+                    saldoInicial = Double.parseDouble(saldoStr);
+                    if (saldoInicial < 0) {
+                        int confirmResult = JOptionPane.showConfirmDialog(null, "El saldo inicial no puede ser negativo. ¿Desea ingresar otro Saldo?");
+                        if (confirmResult != 0) { 
+                            JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
+                            return;
+                        }
+                    } else {
+                        currentSaldoAttemptValid = true;
+                    }
+                } else {
+                    int confirmResult = JOptionPane.showConfirmDialog(null, "Saldo inicial inválido. Por favor, ingrese un número válido.");
+                    if (confirmResult != 0) { 
                         JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
                         return;
                     }
-                    saldoValido = false;
-                } else {
-                    saldoValido = true;
                 }
-            } catch (NumberFormatException e) {
-                confirmResult = JOptionPane.showConfirmDialog(null, "Saldo inválido. Ingrese un número válido. ¿Desea ingresar otro saldo?");
-                if (confirmResult != 0) {
-                    JOptionPane.showMessageDialog(null, "Operación de agregar nueva cuenta cancelada.");
-                    return;
-                }
-                saldoValido = false;
             }
-        } while (!saldoValido);
-
-        String nuevoNumeroCuenta = String.valueOf(siguienteNumeroCuenta);
-        siguienteNumeroCuenta++;
-
-        Cuenta nuevaCuenta = new Cuenta(nuevoNumeroCuenta, clienteSeleccionado, tipoCuenta, saldoInicial);
-        clienteSeleccionado.agregarCuenta(nuevaCuenta);
-
-        JOptionPane.showMessageDialog(null, "Nueva cuenta agregada exitosamente:\n"
-                + "Número de Cuenta: " + nuevaCuenta.getNumeroCuenta() + "\n"
-                + "Cliente: " + nuevaCuenta.getDuenoCuenta().getNombreCompleto() + " (ID: " + nuevaCuenta.getDuenoCuenta().getIdCliente() + ")\n"
-                + "Tipo de Cuenta: " + nuevaCuenta.getTipoCuenta() + "\n"
-                + "Fecha de Apertura: " + nuevaCuenta.getFechaApertura() + "\n"
-                + "Saldo Inicial: " + nuevaCuenta.getSaldoInicial());
-    }
-
-    public void mostrarCuentasYMovimientosEnConsola() {
-        if (contadorClientes == 0) {
-            System.out.println("No hay clientes registrados en el sistema, por lo tanto no hay cuentas que mostrar.");
-            return;
-        }
-
-        System.out.println("\n--- Lista de Cuentas y Movimientos de Clientes ---");
-
-        if (this.cliente1 != null) {
-            System.out.println("\n--- Cliente: " + cliente1.getNombreCompleto() + " (ID: " + cliente1.getIdCliente() + ") ---");
-            if (cliente1.getNumeroCuentasRegistradas() == 0) {
-                System.out.println("    Este cliente no tiene cuentas registradas.");
-            } else {
-                if (cliente1.getCuentaObj1() != null) {
-                    Cuenta cuenta = cliente1.getCuentaObj1();
-                    System.out.println("    CUENTA 1 (Numero: " + cuenta.getNumeroCuenta() + ", Tipo: " + cuenta.getTipoCuenta() + ", Saldo: " + cuenta.getSaldoInicial() + "):");
-                    System.out.println("      Movimientos: " + cuenta.getDetallesMovimientos());
-                }
-                if (cliente1.getCuentaObj2() != null) {
-                    Cuenta cuenta = cliente1.getCuentaObj2();
-                    System.out.println("    CUENTA 2 (Numero: " + cuenta.getNumeroCuenta() + ", Tipo: " + cuenta.getTipoCuenta() + ", Saldo: " + cuenta.getSaldoInicial() + "):");
-                    System.out.println("      Movimientos: " + cuenta.getDetallesMovimientos());
-                }
+            if (currentSaldoAttemptValid) {
+                datosCuentaValidos = true;
             }
         }
 
-        if (this.cliente2 != null) {
-            System.out.println("\n--- Cliente: " + cliente2.getNombreCompleto() + " (ID: " + cliente2.getIdCliente() + ") ---");
-            if (cliente2.getNumeroCuentasRegistradas() == 0) {
-                System.out.println("    Este cliente no tiene cuentas registradas.");
-            } else {
-                if (cliente2.getCuentaObj1() != null) {
-                    Cuenta cuenta = cliente2.getCuentaObj1();
-                    System.out.println("    CUENTA 1 (Numero: " + cuenta.getNumeroCuenta() + ", Tipo: " + cuenta.getTipoCuenta() + ", Saldo: " + cuenta.getSaldoInicial() + "):");
-                    System.out.println("      Movimientos: " + cuenta.getDetallesMovimientos());
-                }
-                if (cliente2.getCuentaObj2() != null) {
-                    Cuenta cuenta = cliente2.getCuentaObj2();
-                    System.out.println("    CUENTA 2 (Numero: " + cuenta.getNumeroCuenta() + ", Tipo: " + cuenta.getTipoCuenta() + ", Saldo: " + cuenta.getSaldoInicial() + "):");
-                    System.out.println("      Movimientos: " + cuenta.getDetallesMovimientos());
-                }
-            }
+        Cuenta nuevaCuenta = new Cuenta(numeroCuenta, clienteSeleccionado, tipoCuenta, saldoInicial);
+        if (clienteSeleccionado.agregarCuenta(nuevaCuenta)) {
+            nuevaCuenta.agregarMovimiento("Apertura de cuenta con saldo inicial de " + saldoInicial);
+            JOptionPane.showMessageDialog(null, "Cuenta agregada exitosamente al cliente " + clienteSeleccionado.getNombreCompleto() +
+                                            "\nNúmero de Cuenta: " + numeroCuenta +
+                                            "\nTipo: " + tipoCuenta +
+                                            
+                                            "\nSaldo Inicial: " + saldoInicial + "\nCuenta Agregada"); 
+        } else {
+            JOptionPane.showMessageDialog(null, "No se pudo agregar la cuenta. El cliente ya tiene el límite máximo de cuentas");
         }
     }
 
     public void mostrarClientes() {
         if (contadorClientes == 0) {
-            System.out.println("No hay clientes registrados en el sistema, por lo tanto no hay clientes o cuentas que mostrar.");
+            System.out.println("No hay clientes registrados en el sistema.");
+            JOptionPane.showMessageDialog(null, "No hay clientes registrados en el sistema.");
             return;
         }
 
-        System.out.println("\n--- Lista Detallada de Clientes y sus Cuentas ---");
-
-        if (this.cliente1 != null) {
-            System.out.println("\n--- Cliente: " + cliente1.getNombreCompleto() + " ---");
-            cliente1.mostrarDatosCliente();
-        }
-
-        if (this.cliente2 != null) {
-            System.out.println("\n--- Cliente: " + cliente2.getNombreCompleto() + " ---");
-            cliente2.mostrarDatosCliente();
+        System.out.println("\n--- LISTADO COMPLETO DE CLIENTES Y SUS CUENTAS ---");
+        for (int i = 0; i < contadorClientes; i++) {
+            Cliente cliente = clientes[i];
+            System.out.println("\n========== Detalle del Cliente " + (i + 1) + " ==========");
+            cliente.mostrarDatosImportantes(); // Este método ahora imprime a la consola todos los datos importantes
+            System.out.println("==================================================");
         }
     }
-
-    private Cliente buscarClientePorId(String id) {
-        if (cliente1 != null && cliente1.getIdCliente().equals(id)) {
-            return cliente1;
-        }
-        if (cliente2 != null && cliente2.getIdCliente().equals(id)) {
-            return cliente2;
-        }
-        return null;
-    }
-
-    private boolean existeIdCliente(String id) {
-        if (cliente1 != null && cliente1.getIdCliente().equals(id)) {
-            return true;
-        }
-        if (cliente2 != null && cliente2.getIdCliente().equals(id)) {
-            return true;
-        }
-        return false;
-    }
-
-    private String obtenerPrimerNombre(String nombreCompleto) {
-        int primerEspacio = nombreCompleto.indexOf(" ");
-        if (primerEspacio > 0) {
-            return nombreCompleto.substring(0, primerEspacio);
-        }
-        return nombreCompleto;
-    }
-
-    public void menuClientes() {
+ public void mostrarCuentasYMovimientosEnConsola() {
         if (contadorClientes == 0) {
-            JOptionPane.showMessageDialog(null, "No hay clientes registrados en el sistema");
+            JOptionPane.showMessageDialog(null, "No hay clientes registrados en el sistema.");
             return;
         }
 
-        boolean loginExitoso = false;
-        while (!loginExitoso) {
-            String usuario = JOptionPane.showInputDialog(null, "Ingrese su usuario:");
-            if (usuario == null) {
-                JOptionPane.showMessageDialog(null, "Operación cancelada");
-                return;
-            }
+        Cliente clienteSeleccionado = null;
+        String idCliente = null; 
+        boolean clienteEncontrado = false;
+        boolean operacionContinuar = true; 
 
-            Cliente cliente = buscarClientePorUsuario(usuario);
-            if (cliente == null) {
-                int confirm = JOptionPane.showConfirmDialog(null, "No hay ningún cliente con el usuario: " + usuario + "\n¿Desea ingresar otro usuario?");
-                if (confirm != 0) {
-                    JOptionPane.showMessageDialog(null, "Operación cancelada");
-                    return;
-                }
-                continue;
-            }
+        while (!clienteEncontrado && operacionContinuar) {
+            String[] opcionesEntrada = {"Ingresar ID", "Cancelar"};
+            int seleccionEntrada = JOptionPane.showOptionDialog(null,
+                                    "¿Desea ingresar el ID de un cliente para ver sus cuentas y movimientos?",
+                                    "Ver Cuentas y Movimientos",
+                                    JOptionPane.DEFAULT_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,
+                                    null,
+                                    opcionesEntrada,
+                                    opcionesEntrada[0]);
 
-            if (cliente.getEstado() == EstadoCliente.INACTIVO) {
-                int confirm = JOptionPane.showConfirmDialog(null, "Cliente está inactivo\n¿Desea ingresar otro usuario?");
-                if (confirm != 0) {
-                    JOptionPane.showMessageDialog(null, "Operación cancelada");
-                    return;
-                }
-                continue;
-            }
-
-            int intentos = 0;
-            boolean claveCorrecta = false;
-            while (intentos < 3 && !claveCorrecta) {
-                String clave = JOptionPane.showInputDialog(null, "Ingrese su clave:");
-                if (clave == null) {
-                    JOptionPane.showMessageDialog(null, "Operación cancelada");
-                    return;
+            if (seleccionEntrada == 0) { // Si el usuario selecciona "Ingresar ID"
+                idCliente = JOptionPane.showInputDialog(null, "Ingrese el ID del cliente:");
+                if (idCliente == null) { // Si el usuario cancela el input del ID
+                    JOptionPane.showMessageDialog(null, "Operación de ingreso de ID cancelada.");
+                    operacionContinuar = false; 
+                    return; 
                 }
 
-                if (cliente.getClave().isEmpty()) {
-                    boolean claveValida = false;
-                    String nuevaClave = "";
-                    do {
-                        nuevaClave = JOptionPane.showInputDialog(null, "Cliente nuevo. Ingrese una nueva clave (6-10 caracteres, al menos un número y una letra):");
-                        if (nuevaClave == null) {
-                            JOptionPane.showMessageDialog(null, "Operación cancelada");
-                            return;
-                        }
-                        if (cliente.validarClave(nuevaClave)) {
-                            String confirmClave = JOptionPane.showInputDialog(null, "Confirme la nueva clave:");
-                            if (confirmClave == null) {
-                                JOptionPane.showMessageDialog(null, "Operación cancelada");
-                                return;
-                            }
-                            if (nuevaClave.equals(confirmClave)) {
-                                cliente.setClave(nuevaClave);
-                                claveValida = true;
-                            } else {
-                                int confirm = JOptionPane.showConfirmDialog(null, "Las claves no coinciden\n¿Desea confirmar de nuevo la clave?");
-                                if (confirm != 0) {
-                                    JOptionPane.showMessageDialog(null, "Operación cancelada");
-                                    return;
-                                }
-                            }
-                        } else {
-                            int confirm = JOptionPane.showConfirmDialog(null, "La clave no cumple con las condiciones mínimas de seguridad:\n"
-                                    + "- Mínimo 6 caracteres\n- Máximo 10 caracteres\n- Al menos un número\n- Al menos una letra\n¿Desea ingresar otra clave?");
-                            if (confirm != 0) {
-                                JOptionPane.showMessageDialog(null, "Operación cancelada");
-                                return;
-                            }
-                        }
-                    } while (!claveValida);
-                }
-
-                if (cliente.getClave().equals(clave)) {
-                    claveCorrecta = true;
+                if (idCliente.trim().length() == 0) {
+                    JOptionPane.showMessageDialog(null, "El ID no puede estar vacío. Inténtelo de nuevo."); 
+                    
                 } else {
-                    intentos++;
-                    if (intentos < 3) {
-                        int confirm = JOptionPane.showConfirmDialog(null, "Clave incorrecta\n¿Desea intentarlo de nuevo?");
-                        if (confirm != 0) {
-                            JOptionPane.showMessageDialog(null, "Operación cancelada");
-                            return;
+                    clienteSeleccionado = buscarClientePorId(idCliente);
+                    if (clienteSeleccionado == null) {
+                        int confirmResult = JOptionPane.showConfirmDialog(null, "¿Desea ingresar otro ID?"); 
+                        if (confirmResult != 0) { 
+                            operacionContinuar = false; 
+                            return; 
                         }
+                       
                     } else {
-                        cliente.setEstado(EstadoCliente.INACTIVO);
-                        JOptionPane.showMessageDialog(null, "Cliente desactivado por intentos fallidos");
-                        return;
+                        clienteEncontrado = true; 
                     }
                 }
+            } else { 
+                JOptionPane.showMessageDialog(null, "Operación cancelada.", "Cancelado", 1); 
+                operacionContinuar = false; 
+                return; 
             }
+        }
 
-            System.out.println("| Tarjeta de acceso | A | B | C | D | E |");
-            int[][] tarjeta = cliente.getTarjetaAcceso();
-            for (int i = 0; i < 4; i++) {
-                System.out.print("| " + (i + 1) + " | ");
-                for (int j = 0; j < 5; j++) {
-                    System.out.print(tarjeta[i][j] + " | ");
-                }
-                System.out.println();
+       
+        if (clienteEncontrado) {
+            System.out.println("\n--- CUENTAS Y MOVIMIENTOS DEL CLIENTE: " + clienteSeleccionado.getNombreCompleto() + " ---");
+            clienteSeleccionado.mostrarDatosImportantes();
+            System.out.println("-----------------------------------------------------");
+        }
+    }
+    public Cliente iniciarSesionCliente() {
+        Cliente clienteActual = null;
+        String usuarioIngresado;
+        String claveIngresada;
+        boolean usuarioValido = false;
+
+        while (!usuarioValido) {
+            usuarioIngresado = JOptionPane.showInputDialog(null, "Ingrese su usuario:");
+            if (usuarioIngresado == null) {
+                JOptionPane.showMessageDialog(null, "Inicio de sesión cancelado.");
+                return null;
             }
+            
+            boolean currentAttemptValid = false;
+            if (usuarioIngresado.trim().length() == 0) { 
+                JOptionPane.showMessageDialog(null, "El usuario no puede estar vacío. Inténtelo de nuevo.");
+            } else {
+                clienteActual = buscarClientePorUsuario(usuarioIngresado);
 
-            Random random = new Random();
-            String[] posiciones = new String[3];
-            String[] letras = {"A", "B", "C", "D", "E"};
-            for (int i = 0; i < 3; i++) {
-                int fila = random.nextInt(4) + 1;
-                int columna = random.nextInt(5);
-                posiciones[i] = letras[columna] + fila;
-            }
-
-            boolean accesosCorrectos = false;
-            do {
-                String input = JOptionPane.showInputDialog(null, "Consulte su tarjeta de acceso y digite los accesos: "
-                        + String.join(" ", posiciones) + " (Formato XX-XX-XX)");
-                if (input == null) {
-                    JOptionPane.showMessageDialog(null, "Operación cancelada");
-                    return;
-                }
-
-                String[] valores = input.split("-");
-                if (valores.length != 3) {
-                    int confirm = JOptionPane.showConfirmDialog(null, "Formato de acceso incorrecto (use XX-XX-XX)\n¿Desea intentarlo de nuevo?");
-                    if (confirm != 0) {
-                        JOptionPane.showMessageDialog(null, "Operación cancelada");
-                        return;
-                    }
-                    continue;
-                }
-
-                boolean correctos = true;
-                for (int i = 0; i < 3; i++) {
-                    String pos = posiciones[i];
-                    int fila = Integer.parseInt(pos.substring(1)) - 1;
-                    int columna = "ABCDE".indexOf(pos.charAt(0));
-                    try {
-                        int valor = Integer.parseInt(valores[i].trim());
-                        if (valor != tarjeta[fila][columna]) {
-                            correctos = false;
-                            break;
-                        }
-                    } catch (NumberFormatException e) {
-                        correctos = false;
-                        break;
-                    }
-                }
-
-                if (correctos) {
-                    accesosCorrectos = true;
-                    JOptionPane.showMessageDialog(null, "Bienvenido " + cliente.getNombreCompleto());
-                    loginExitoso = true;
+                if (clienteActual == null) {
+                    JOptionPane.showMessageDialog(null, "No hay ningún cliente con el usuario: " + usuarioIngresado);
+                } else if (clienteActual.getEstado() == EstadoCliente.INACTIVO) {
+                    JOptionPane.showMessageDialog(null, "El cliente '" + usuarioIngresado + "' está inactivo. Contacte a soporte.");
                 } else {
-                    int confirm = JOptionPane.showConfirmDialog(null, "Acceso incorrecto\n¿Desea intentarlo de nuevo?");
-                    if (confirm != 0) {
-                        JOptionPane.showMessageDialog(null, "Operación cancelada");
-                        return;
+                    currentAttemptValid = true; 
+                }
+            }
+            if (currentAttemptValid) {
+                usuarioValido = true; 
+            }
+        }
+
+        // Si la clave está vacía, es la primera vez que inicia sesión
+        if (clienteActual.getClave() == null || clienteActual.getClave().length() == 0) {
+            JOptionPane.showMessageDialog(null, "Es su primera vez iniciando sesión. Debe crear su contraseña.");
+            boolean claveEstablecida = false;
+            while (!claveEstablecida) {
+                String nuevaClave1 = JOptionPane.showInputDialog(null, "Ingrese su nueva contraseña:");
+                if (nuevaClave1 == null) {
+                    JOptionPane.showMessageDialog(null, "Creación de contraseña cancelada. Inicio de sesión abortado.");
+                    return null;
+                }
+                
+                boolean currentClaveAttemptValid = false;
+                if (nuevaClave1.trim().length() == 0) { 
+                    JOptionPane.showMessageDialog(null, "La contraseña no puede estar vacía. Inténtelo de nuevo.");
+                } else {
+                    String nuevaClave2 = JOptionPane.showInputDialog(null, "Confirme su nueva contraseña:");
+                    if (nuevaClave2 == null) {
+                        JOptionPane.showMessageDialog(null, "Confirmación de contraseña cancelada. Inicio de sesión abortado.");
+                        return null;
+                    }
+
+                    if (nuevaClave1.equals(nuevaClave2)) {
+                        clienteActual.setClave(nuevaClave1);
+                        JOptionPane.showMessageDialog(null, "Contraseña creada exitosamente. Iniciando sesión.");
+                        currentClaveAttemptValid = true;
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Las contraseñas no coinciden. Inténtelo de nuevo"); 
                     }
                 }
-            } while (!accesosCorrectos);
+                if (currentClaveAttemptValid) {
+                    claveEstablecida = true; 
+                }
+            }
         }
-    }
 
-    private Cliente buscarClientePorUsuario(String usuario) {
-        if (cliente1 != null && cliente1.getUsuario().equals(usuario)) {
-            return cliente1;
+        // Pedir la clave de acceso si ya está establecida
+        boolean claveValida = false;
+        while (!claveValida) {
+            claveIngresada = JOptionPane.showInputDialog(null, "Ingrese su clave de acceso:");
+            if (claveIngresada == null) {
+                JOptionPane.showMessageDialog(null, "Inicio de sesión cancelado."); 
+                return null;
+            }
+            
+            boolean currentLoginClaveAttemptValid = false;
+            if (claveIngresada.trim().length() == 0) { 
+                JOptionPane.showMessageDialog(null, "La clave no puede estar vacía. Inténtelo de nuevo.");
+            } else {
+                if (claveIngresada.equals(clienteActual.getClave())) {
+                    currentLoginClaveAttemptValid = true;
+                } else {
+                    JOptionPane.showMessageDialog(null, "Clave incorrecta. Inténtelo de nuevo."); 
+                }
+            }
+            if (currentLoginClaveAttemptValid) {
+                claveValida = true; 
+            }
         }
-        if (cliente2 != null && cliente2.getUsuario().equals(usuario)) {
-            return cliente2;
-        }
-        return null;
-    }
 
+        JOptionPane.showMessageDialog(null, "¡Bienvenido al sistema, " + clienteActual.getNombreCompleto() + "!"); 
+        return clienteActual;
+    }
 }

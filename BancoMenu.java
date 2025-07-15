@@ -15,26 +15,22 @@ public class BancoMenu {
 
  public static void mostrarMenuBancario(BancoGestor gestor) {
 
-        boolean volver = false;
+      boolean volver = false;
 
         while (!volver) {
             String opcion = JOptionPane.showInputDialog(
                 "Menú Bancario:\n"
-              + "1. Generar datos\n"
-              + "2. Mostrar clientes\n"
-              + "3. Mostrar cuentas y movimientos\n"
-              + "4. Agregar nuevo cliente\n"
-              + "5. Agregar nueva cuenta\n"
-              + "6. Buscar cliente\n"
-              + "7. Buscar cuenta\n"
-              + "8. Generar reportes\n"
-              + "9. Volver al menú principal"
+              + "1. Agregar nuevo cliente\n"
+              + "2. Agregar nueva cuenta a cliente\n"
+              + "3. Mostrar todos los clientes y sus cuentas\n"
+              + "4. Mostrar cuentas y movimientos de un cliente específico\n"
+              + "5. Volver al menú principal"
             );
-            if (opcion == null) {
 
-                break;
+            if (opcion == null) { // Si el usuario cancela o cierra
+                volver = true; // Vuelve al menú principal
+                continue;
             }
-
 
             boolean esNumero = true;
             for (int i = 0; i < opcion.length(); i++) {
@@ -48,49 +44,26 @@ public class BancoMenu {
             if (esNumero) {
                 int op = Integer.parseInt(opcion);
                 switch (op) {
-                    case 1:
-                       JOptionPane.showMessageDialog(null,"Funcion en construccion perdone el inconveniente");
-
-                        break;
-                    case 2:
-                         gestor.mostrarClientes();
-                        break;
-                    case 3:
-                        gestor.mostrarCuentasYMovimientosEnConsola();
-
-                        break;
-                    case 4:
+                    case 1: // Agregar nuevo cliente
                         gestor.agregarCliente();
- 
                         break;
-                    case 5:
+                    case 2: // Agregar nueva cuenta a cliente
                         gestor.agregarNuevaCuenta();
-
                         break;
-                    case 6:
-                        JOptionPane.showMessageDialog(null,"Funcion en construccion perdone el inconveniente");
-
+                    case 3: // Mostrar todos los clientes y sus cuentas
+                        gestor.mostrarClientes();
                         break;
-                    case 7:
-                        JOptionPane.showMessageDialog(null,"Funcion en construccion perdone el inconveniente");
-
+                    case 4: // Mostrar cuentas y movimientos de un cliente específico (pide ID)
+                        gestor.mostrarCuentasYMovimientosEnConsola();
                         break;
-                    case 8:
-                        JOptionPane.showMessageDialog(null,"Funcion en construccion perdone el inconveniente");
-
-                        break;
-                    case 9:
-
+                    case 5: // Volver al menú principal
                         volver = true;
-                        JOptionPane.showMessageDialog(null,"Saliendo del menu bancario");
-                        ProyectoFinal.mostrarMenuPrincipal();
-                       
                         break;
                     default:
-                        JOptionPane.showMessageDialog(null, "Opción no válida");
+                        JOptionPane.showMessageDialog(null, "Opción no válida. Por favor, ingrese un número entre 1 y 5.", "Opción Inválida", JOptionPane.WARNING_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(null, "Ingresa un número válido");
+                JOptionPane.showMessageDialog(null, "Ingresa un número válido para la opción.", "Entrada Inválida", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

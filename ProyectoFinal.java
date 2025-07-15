@@ -14,27 +14,49 @@ public static void main(String[] args) {
     }
 
      public static void mostrarMenuPrincipal() {
-        BancoGestor gestor = new BancoGestor();
-        boolean salir = false;
+        BancoGestor gestorBanco = new BancoGestor();
 
-        while (!salir) {
-            String[] opciones = {"BANCO", "CLIENTES", "SALIR"};
-            int opcion = JOptionPane.showOptionDialog(null, "Bienvenido a HiperBanco", "Inicio del Sistema",
-                    JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, opciones, opciones[0]);
+        mostrarMenuPrincipal(gestorBanco);
+    }
 
-            switch (opcion) {
-                case 0: // BANCO
+    
+    public static void mostrarMenuPrincipal(BancoGestor gestor) {
+        String[] opciones = {"Menú Banco", "Clientes", "Salir"};
+        String titulo = "Hiperbanco - Menú Principal";
+        String mensaje = "Selecciona una opción:";
+
+        boolean continuar = true;
+        while (continuar) {
+            int seleccion = JOptionPane.showOptionDialog(
+                    null,
+                    mensaje,
+                    titulo,
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    opciones,
+                    opciones[0]
+            );
+
+            switch (seleccion) {
+                case 0: // "Menú Banco" (Opciones de administración del banco)
                     BancoMenu.mostrarMenuBancario(gestor);
                     break;
-                case 1: // CLIENTES
-                    gestor.menuClientes();
+                case 1: // "Clientes" (Inicia el proceso de login de cliente)
+                    JOptionPane.showMessageDialog(null, "Has seleccionado 'Clientes'. Por favor, inicia sesión.");
+                    Cliente clienteLogeado = gestor.iniciarSesionCliente(); // Llama al método de login
+                    if (clienteLogeado != null) {
+                        JOptionPane.showMessageDialog(null, "¡Sesión iniciada como " + clienteLogeado.getNombreCompleto() + "!");
+                    }
+                   
                     break;
-                case 2: // SALIR
-                    salir = true;
-                    JOptionPane.showMessageDialog(null, "Gracias por usar HiperBanco");
+                case 2: // "Salir"
+                    JOptionPane.showMessageDialog(null, "Saliendo del programa. ¡Hasta pronto!");
+                    continuar = false; 
                     break;
+               
                 default:
-                    salir = true;
+                    JOptionPane.showMessageDialog(null, "Opción no reconocida. Por favor, selecciona una opción válida.");
                     break;
             }
         }

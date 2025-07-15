@@ -8,11 +8,11 @@ package com.mycompany.proyectofinal;
  *
  * @author azoac
  */
-import javax.swing.JOptionPane;
+import java.time.LocalDate;
 import java.util.Random;
+import javax.swing.JOptionPane;
 
 public class Cliente {
-
     private String idCliente;
     private String nombreCompleto;
     private String telefono;
@@ -20,59 +20,48 @@ public class Cliente {
     private String usuario;
     private String clave;
     private EstadoCliente estado;
-    private Cuenta cuentaObj1;
-    private Cuenta cuentaObj2;
+    private Cuenta[] cuentas = new Cuenta[5]; 
     private int numeroCuentasRegistradas;
     private int[][] tarjetaAcceso;
 
-    // Constructor 
+    // Constructor
     public Cliente(String idCliente, String nombreCompleto, String telefono, String correo, String usuario) {
         this.setIdCliente(idCliente);
         this.setNombreCompleto(nombreCompleto);
         this.setTelefono(telefono);
         this.setCorreo(correo);
         this.setUsuario(usuario);
-        this.clave = "";
-        this.estado = EstadoCliente.ACTIVO;
+        this.clave = ""; // Clave se inicializa vacía
+        this.estado = EstadoCliente.ACTIVO; // Estado por defecto es ACTIVO
         this.numeroCuentasRegistradas = 0;
         this.generarTarjetaAcceso();
     }
 
-    // Getters
+    // --- Getters ---
     public String getIdCliente() {
         return idCliente;
     }
-
     public String getNombreCompleto() {
         return nombreCompleto;
     }
-
     public String getTelefono() {
         return telefono;
     }
-
     public String getCorreo() {
         return correo;
     }
-
     public String getUsuario() {
         return usuario;
     }
-
     public String getClave() {
         return clave;
     }
-
     public EstadoCliente getEstado() {
         return estado;
     }
 
-    public Cuenta getCuentaObj1() {
-        return cuentaObj1;
-    }
-
-    public Cuenta getCuentaObj2() {
-        return cuentaObj2;
+    public Cuenta[] getCuentas() {
+        return cuentas;
     }
 
     public int getNumeroCuentasRegistradas() {
@@ -83,7 +72,7 @@ public class Cliente {
         return tarjetaAcceso;
     }
 
-    // Setters
+    // --- Setters ---
     public void setIdCliente(String idCliente) {
         if (idCliente != null && idCliente.trim().length() > 0) {
             this.idCliente = idCliente;
@@ -100,26 +89,41 @@ public class Cliente {
         }
     }
 
+    // Validación de Teléfono
     public void setTelefono(String telefono) {
+    
+    
         if (telefono != null && telefono.length() == 9 && telefono.charAt(4) == '-') {
-            this.telefono = telefono;
-        } else {
-            this.telefono = "0000-0000";
+            boolean allDigits = true;
+            for (int i = 0; i < telefono.length(); i++) {
+                if (i != 4 && !Character.isDigit(telefono.charAt(i))) {
+                    allDigits = false;
+                    break;
+                }
+            }
+            if (allDigits) {
+                this.telefono = telefono;
+                return;
+            }
         }
+        this.telefono = "0000-0000"; // Valor por defecto si no cumple la validación
     }
 
+    // Validación de Correo adaptada de la imagen
     public void setCorreo(String correo) {
         if (correo != null) {
             int atIndex = correo.indexOf('@');
+            // Revisa que '@' no esté al principio o al final
             if (atIndex > 0 && atIndex < correo.length() - 1) {
                 int dotIndex = correo.indexOf('.', atIndex + 1);
+                // Revisa que haya un '.' después de '@' y no al final
                 if (dotIndex > atIndex + 1 && dotIndex < correo.length() - 1) {
                     this.correo = correo;
-                    return;
+                    return; // Si es válido, asigna y sale
                 }
             }
         }
-        this.correo = "invalido@dominio.com";
+        this.correo = "correo.invalido@example.com"; // Valor por defecto 
     }
 
     public void setUsuario(String usuario) {
@@ -131,11 +135,7 @@ public class Cliente {
     }
 
     public void setClave(String clave) {
-        if (validarClave(clave)) {
-            this.clave = clave;
-        } else {
-            this.clave = "";
-        }
+        this.clave = clave;
     }
 
     public void setEstado(EstadoCliente estado) {
@@ -146,32 +146,10 @@ public class Cliente {
         }
     }
 
-    // Método para validar clave
-    public boolean validarClave(String clave) {
-        if (clave == null || clave.length() < 6 || clave.length() > 10) {
-            return false;
-        }
-        boolean tieneNumero = false;
-        boolean tieneLetra = false;
-        for (char c : clave.toCharArray()) {
-            if (Character.isDigit(c)) {
-                tieneNumero = true;
-            }
-            if (Character.isLetter(c)) {
-                tieneLetra = true;
-            }
-        }
-        return tieneNumero && tieneLetra;
-    }
-
-    // Métodos
+    // --- Métodos ---
     public boolean agregarCuenta(Cuenta nuevaCuenta) {
-        if (numeroCuentasRegistradas < 2) {
-            if (cuentaObj1 == null) {
-                cuentaObj1 = nuevaCuenta;
-            } else if (cuentaObj2 == null) {
-                cuentaObj2 = nuevaCuenta;
-            }
+        if (numeroCuentasRegistradas < 5) { 
+            this.cuentas[numeroCuentasRegistradas] = nuevaCuenta;
             numeroCuentasRegistradas++;
             return true;
         }
@@ -183,42 +161,13 @@ public class Cliente {
         this.tarjetaAcceso = new int[4][5];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 5; j++) {
-                this.tarjetaAcceso[i][j] = random.nextInt(10, 90);
+                this.tarjetaAcceso[i][j] = random.nextInt(10, 99); // Números entre 10 y 99
             }
         }
     }
 
+    // Método para mostrar datos importantes en consola, con clave en asteriscos
     public void mostrarDatosImportantes() {
-        String cuentasStr = "";
-        if (numeroCuentasRegistradas > 0) {
-            if (cuentaObj1 != null) {
-                cuentasStr += cuentaObj1.getNumeroCuenta();
-            }
-            if (cuentaObj2 != null) {
-                cuentasStr += ", " + cuentaObj2.getNumeroCuenta();
-            }
-        } else {
-            cuentasStr = "Ninguna";
-        }
-
-        // Mostrar tarjeta de acceso en consola
-        System.out.println("| Tarjeta de acceso | A | B | C | D | E |");
-        for (int i = 0; i < 4; i++) {
-            System.out.print("| " + (i + 1) + " | ");
-            for (int j = 0; j < 5; j++) {
-                System.out.print(tarjetaAcceso[i][j] + " | ");
-            }
-            System.out.println();
-        }
-
-        JOptionPane.showMessageDialog(null, "--- Datos del Cliente ---\n"
-                + "ID Cliente: " + getIdCliente() + "\n"
-                + "Nombre Completo: " + getNombreCompleto() + "\n"
-                + "Usuario: " + getUsuario() + "\n"
-                + "Números de Cuentas: [" + cuentasStr + "]");
-    }
-
-    public void mostrarDatosCliente() {
         System.out.println("\n--- Datos del Cliente ---");
         System.out.println("ID Cliente: " + getIdCliente());
         System.out.println("Nombre Completo: " + getNombreCompleto());
@@ -226,38 +175,46 @@ public class Cliente {
         System.out.println("Teléfono: " + getTelefono());
         System.out.println("Correo: " + getCorreo());
         System.out.println("Estado: " + getEstado());
-        System.out.println("Clave: " + "*".repeat(clave.length()));
 
-        String cuentasStr = "";
-        if (numeroCuentasRegistradas > 0) {
-            if (cuentaObj1 != null) {
-                cuentasStr = cuentaObj1.getNumeroCuenta()
-                        + " (" + cuentaObj1.getTipoCuenta()
-                        + ") Saldo: " + cuentaObj1.getSaldoInicial();
+        // Mostrar la clave como asteriscos
+        String claveEnmascarada = "";
+        if (this.clave != null) {
+            for (int i = 0; i < this.clave.length(); i++) {
+                claveEnmascarada += "*";
             }
-            if (cuentaObj2 != null) {
-                if (cuentasStr.length() > 0) {
-                    cuentasStr += ", ";
-                }
-                cuentasStr += cuentaObj2.getNumeroCuenta()
-                        + " (" + cuentaObj2.getTipoCuenta()
-                        + ") Saldo: " + cuentaObj2.getSaldoInicial();
+        }
+        System.out.println("Clave: " + claveEnmascarada);
+
+        System.out.println("Cuentas del Cliente:");
+        if (numeroCuentasRegistradas > 0) {
+            for (int i = 0; i < numeroCuentasRegistradas; i++) {
+                Cuenta cuenta = this.cuentas[i];
+                System.out.println("  - Número: " + cuenta.getNumeroCuenta() +
+                                   " | Tipo: " + cuenta.getTipoCuenta() +
+                                   " | Saldo: " + cuenta.getSaldoInicial() +
+                                   " | Apertura: " + cuenta.getFechaApertura());
+                System.out.println("    Movimientos:\n" + cuenta.getDetallesMovimientos());
             }
         } else {
-            cuentasStr = "Ninguna";
+            System.out.println("  Ninguna cuenta registrada.");
         }
-        System.out.println("Números de Cuentas: [" + cuentasStr + "]");
 
         System.out.println("Tarjeta de Acceso:");
-        System.out.println("| Tarjeta de acceso | A | B | C | D | E |");
-        for (int i = 0; i < 4; i++) {
-            System.out.print("| " + (i + 1) + " | ");
-            for (int j = 0; j < 5; j++) {
-                System.out.print(tarjetaAcceso[i][j] + " | ");
+        if (tarjetaAcceso != null) {
+            for (int i = 0; i < 4; i++) {
+                System.out.print("  ");
+                for (int j = 0; j < 5; j++) {
+                    if (tarjetaAcceso[i][j] < 10) {
+                        System.out.print("0" + tarjetaAcceso[i][j] + " ");
+                    } else {
+                        System.out.print(tarjetaAcceso[i][j] + " ");
+                    }
+                }
+                System.out.println();
             }
-            System.out.println();
+        } else {
+            System.out.println("  Tarjeta de Acceso no generada.");
         }
         System.out.println("-------------------------");
     }
-
 }

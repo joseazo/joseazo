@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import javax.swing.JOptionPane;
 
 public class Cuenta {
+ 
     private String numeroCuenta;
     private Cliente duenoCuenta;
     private TipoCuenta tipoCuenta;
@@ -20,41 +21,40 @@ public class Cuenta {
     private String[] movimientos;
     private int contadorMovimientos;
 
+    // Constante para el número máximo de movimientos
+    private static final int MAX_MOVIMIENTOS = 50;
+
     // Constructor
     public Cuenta(String numeroCuenta, Cliente duenoCuenta, TipoCuenta tipoCuenta, double saldoInicial) {
         this.numeroCuenta = numeroCuenta;
         this.duenoCuenta = duenoCuenta;
         this.tipoCuenta = tipoCuenta;
-        this.fechaApertura = LocalDate.now();
-        if (saldoInicial >= 0) {
-            this.saldoInicial = saldoInicial;
-        } else {
-            this.saldoInicial = 0;
-            JOptionPane.showMessageDialog(null, "El saldo inicial no puede ser negativo. Se estableció en 0.");
-        }
-        this.movimientos = new String[50];
+        this.fechaApertura = LocalDate.now(); // Se obtiene la fecha actual del sistema
+        this.saldoInicial = saldoInicial;
+        this.movimientos = new String[MAX_MOVIMIENTOS];
         this.contadorMovimientos = 0;
     }
 
-    // Getters
+    // --- Getters ---
     public String getNumeroCuenta() { return numeroCuenta; }
     public Cliente getDuenoCuenta() { return duenoCuenta; }
     public TipoCuenta getTipoCuenta() { return tipoCuenta; }
     public LocalDate getFechaApertura() { return fechaApertura; }
-    public double getSaldoInicial() { return saldoInicial; }
+    public double getSaldoInicial() { return saldoInicial; } // Nota: el nombre del getter debería ser getSaldo, no getSaldoInicial
 
+    // Devuelve una cadena con todos los movimientos registrados.
     public String getDetallesMovimientos() {
         if (contadorMovimientos == 0) {
-            return "No hay movimientos registrados por el momento.";
+            return "    No hay movimientos registrados por el momento.";
         }
-        String detalles = "";
+        StringBuilder detalles = new StringBuilder();
         for (int i = 0; i < contadorMovimientos; i++) {
-            detalles = detalles + "- " + movimientos[i] + "\n";
+            detalles.append("    - ").append(movimientos[i]).append("\n");
         }
-        return detalles;
+        return detalles.toString();
     }
 
-    // Setters
+    // --- Setters ---
     public void setNumeroCuenta(String numeroCuenta) {
         this.numeroCuenta = numeroCuenta;
     }
@@ -71,21 +71,19 @@ public class Cuenta {
         this.fechaApertura = fechaApertura;
     }
 
-    public void setSaldoInicial(double saldoInicial) {
-        if (saldoInicial >= 0) {
-            this.saldoInicial = saldoInicial;
-        } else {
-            JOptionPane.showMessageDialog(null, "El saldo no puede ser negativo.");
-        }
+    public void setSaldoInicial(double saldoInicial) { // Nota: el nombre del setter debería ser setSaldo, no setSaldoInicial
+        this.saldoInicial = saldoInicial;
     }
 
-    // Métodos
+    // --- Métodos ---
+
+    // Agrega un nuevo movimiento al historial de la cuenta.
     public void agregarMovimiento(String descripcion) {
-        if (contadorMovimientos < 50) {
-            this.movimientos[contadorMovimientos] = descripcion;
-            this.contadorMovimientos++;
+        if (contadorMovimientos < MAX_MOVIMIENTOS) {
+            this.movimientos[contadorMovimientos] = LocalDate.now() + ": " + descripcion; // Añade la fecha al movimiento
+            contadorMovimientos++;
         } else {
-            JOptionPane.showMessageDialog(null, "Se ha alcanzado el límite de 50 movimientos para esta cuenta.");
+            System.out.println("Advertencia: Límite de movimientos alcanzado para la cuenta " + numeroCuenta);
         }
     }
 }
